@@ -1,6 +1,6 @@
 import util from 'util'
 import { unified } from 'unified'
-import { visit } from 'unist-util-visit'
+import { visit as unistdVisit } from 'unist-util-visit'
 import { reporter } from 'vfile-reporter'
 import remarkPresetLintConsistent from 'remark-preset-lint-consistent'
 import remarkPresetLintRecommended from 'remark-preset-lint-recommended'
@@ -22,11 +22,39 @@ import remarkCallouts, { calloutHastHandlers } from './remark-callouts.js'
 function rehypeMoveToc() {
   return (tree) => {
     let toc = tree.children.shift();
-    visit(tree, (n, i, p) => {
+    unistdVisit(tree, (n, i, p) => {
       if(n.type == 'text' && n.value == '{{TOC}}')
         p.children[i] = toc;
     });
   };
+}
+
+/**
+ * Small utility to add the section number to each heading
+ * # title                   <h1>1 title</h1>
+ * ## subtitle            -> <h2>1.1 subtitle</h2>
+ * ## another subtitle       <h2>1.2 another subtitle</h2>
+ */
+function rehypeAddHeadingSection(opts={ headings: ['h1','h2','h3','h4','h5','h6'] }) {
+  return (tree) => visit(tree, []);
+
+  function visit(tree, current) {
+    console.log(tree.tagName, opts.headings.includes(tree.tagName))
+    if(tree.type == 'element' && opts.headings.includes(tree.tagName)) {
+      let n = opts.headings.indexOf(tree.tagName)+1;
+      while(current.length < n)
+        current.push(0);
+      while(current.length > n)
+        current.pop();
+      current[n-1]++;
+      tree.children.unshift({ type: 'text', value: current.join('.')+' ' });
+    }
+    if(tree.children) {
+      for(let c of tree.children) {
+        visit(c, current);
+      }
+    }
+  }
 }
 
 /**
@@ -50,6 +78,7 @@ async function convertMarkdownToHtml(markdown) {
     .use(rehypeCustomHighlight)
     .use(rehypeToc, { headings: [ "h2", "h3" ] })
     .use(rehypeMoveToc)
+    .use(rehypeAddHeadingSection, { headings: [ "h2", "h3", "h4", "h5", "h6" ] })
     .use(rehypeStringify)
     .process(markdown);
 
