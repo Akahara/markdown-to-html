@@ -1,6 +1,6 @@
 {
   "name": "markdown-to-html",
-  "version": "1.0.1",
+  "version": "1.0.1.1",
   "description": "Extended markdown to html",
   "main": "index.js",
   "dependencies": {

@@ -39,7 +39,6 @@ function rehypeAddHeadingSection(opts={ headings: ['h1','h2','h3','h4','h5','h6'
   return (tree) => visit(tree, []);
 
   function visit(tree, current) {
-    console.log(tree.tagName, opts.headings.includes(tree.tagName))
     if(tree.type == 'element' && opts.headings.includes(tree.tagName)) {
       let n = opts.headings.indexOf(tree.tagName)+1;
       while(current.length < n)
