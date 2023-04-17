@@ -64,7 +64,7 @@ function printTree() {
 }
 
 async function convertMarkdownToHtml(markdown) {
-  const html = await unified()
+  const processor = unified()
     .data('settings', {fragment: true})
     .use(remarkPresetLintConsistent)
     .use(remarkPresetLintRecommended)
@@ -78,10 +78,11 @@ async function convertMarkdownToHtml(markdown) {
     .use(rehypeToc, { headings: [ "h2", "h3" ] })
     .use(rehypeMoveToc)
     .use(rehypeAddHeadingSection, { headings: [ "h2", "h3", "h4", "h5", "h6" ] })
-    .use(rehypeStringify)
-    .process(markdown);
+    .use(rehypeStringify);
 
-    // console.error(reporter(file));
+  const html = await processor.process(markdown);
+
+  // console.error(reporter(file));
   return html;
 }
 
